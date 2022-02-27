@@ -1,0 +1,21 @@
+{
+    "testsuites": [
+      {
+        "name": "SmartPtrTest",
+        "testcases": [
+          {
+            "name": "AutoPtrTest",
+            "feature": "Smart Pointer",
+            "scenario": "create packetet object with unique_ptr ",
+            "given": "create a pointer to unique_ptr",
+            "when": "out of the scope",
+            "then": "the pointer will be released",
+            "checkpoints": [
+              "1. check FINGERPRINT is 0x8770\n  2. check FINGERPRINT is not 0x8770"
+            ]
+          }
+          
+        ]
+      }
+    ]
+  }
