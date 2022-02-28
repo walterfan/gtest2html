@@ -2,7 +2,23 @@
 
 A python script to convert google test report from xml to markdown or html files
 
-# Steps
+# Usage
+
+
+
+* Convert xml to markdown
+
+```
+./gtest2html.py  --input=example/ut-report.xml --output=-ut-report.md
+```
+
+* Convert xml to html
+
+```
+./gtest2html.py --input=example/ut-report.xml --output=ut-report.html
+```
+
+# Example
 
 * build example
 
@@ -18,16 +34,4 @@ cd ..
 
 ```
 ./bld/gtest_demo --gtest_output="xml:ut-report.xml"
-```
-
-* Convert xml to markdown
-
-```
-./gtest2html.py  --xml_file=ut-report.xml --markdown_file=-ut-report.md
-```
-
-* Convert xml to html
-
-```
-./gtest2html.py --xml_file=ut-report.xml --html_file=ut-report.html
 ```

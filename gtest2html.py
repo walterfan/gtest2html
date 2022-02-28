@@ -262,7 +262,7 @@ class TestCaseSummarizer:
         input_file = codecs.open(markdown_file, mode="r", encoding="utf-8")
         text = input_file.read()
 
-        html = markdown.markdown(text)
+        html = markdown.markdown(text, extensions=['markdown.extensions.tables'])
 
         output_file = codecs.open(html_file, "w", 
                           encoding="utf-8", 
@@ -329,12 +329,12 @@ if __name__ == '__main__':
             usage()
 
 
-        """
+        
         if markdown_file and os.path.isfile(markdown_file):
             os.remove(markdown_file)
         if html_file and os.path.isfile(html_file):
             os.remove(html_file)
-        """
+        
 
         if json_file:
             read_test_cases(json_file, markdown_file, xml_file)
