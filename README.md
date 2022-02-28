@@ -24,11 +24,11 @@ make
 * Convert xml to markdown
 
 ```
-./gtest2html.py --markdown_file=-ut-report.md --xml_file=ut-report.xml
+./gtest2html.py  --xml_file=ut-report.xml --markdown_file=-ut-report.md
 ```
 
 * Convert xml to html
 
 ```
-./gtest2html.py --xml_file=ut-report.xml --html_file=ut-report.xml
+./gtest2html.py --xml_file=ut-report.xml --html_file=ut-report.html
 ```
