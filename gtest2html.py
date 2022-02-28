@@ -3,7 +3,7 @@
 # This tool is for test case summary and result report  --  Walter Fan on 9/1/17
 ###########################################################################################################
 import os
-#import mistune
+import markdown
 import codecs
 import sys
 import struct
@@ -11,12 +11,13 @@ import re
 import json
 import logging
 import subprocess
-from tkinter.tix import COLUMN
+
 import xml.etree.ElementTree as ET
 
-DEFAULT_MD = "goog-cc-ut-report.md"
-DEFAULT_HTML = "goog-cc-ut-report.html"
-DEFAULT_XML = "goog-cc-ut-report.xml"
+DEFAULT_MD = "ut-report.md"
+DEFAULT_HTML = "ut-report.html"
+DEFAULT_XML = "ut-report.xml"
+DEFAULT_JSON = "ut-cases.json"
 
 verbose_flag = True    
 log_file = 'testcases.log' 
@@ -32,7 +33,7 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 
-COLUMNS = [ "suite", "case", "scenario", "given", "when", "then", "checkpoints","result"]
+
 
 ENABLE_EXTEND_ATTRIBUTES = False
 
@@ -263,10 +264,7 @@ class TestCaseSummarizer:
         input_file = codecs.open(markdown_file, mode="r", encoding="utf-8")
         text = input_file.read()
 
-        renderer = mistune.Renderer(escape=True, hard_wrap=True)
-        # use this renderer instance
-        markdown = mistune.Markdown(renderer=renderer)
-        html = markdown(text)
+        html = markdown.markdown(text)
 
         output_file = codecs.open(html_file, "w", 
                           encoding="utf-8", 
@@ -274,9 +272,9 @@ class TestCaseSummarizer:
         output_file.write(html)
     
 
-def read_test_cases(xml_file):
+def read_test_cases(json_file, markdown_file, xml_file):
     summarizer =  TestCaseSummarizer(".", xml_file)
-    summarizer.read_case_files()
+    summarizer.read_case_file(json_file)
     summarizer.read_test_results()
     summarizer.json_to_markdown(markdown_file)
         
@@ -290,10 +288,13 @@ def write_test_cases(xml_file, markdown_file, html_file):
     if(html_file):
         summarizer.dump_to_html(html_file)
 
+def usage():
+    print("Usage: ./TestCaseSummary.py --input={} --output={}]"
+            .format(DEFAULT_XML, DEFAULT_MD))
+    exit(0)
 
 if __name__ == '__main__':
-    
-    
+
     argsdict = {}
 
     for farg in sys.argv:
@@ -302,29 +303,42 @@ if __name__ == '__main__':
             arg = arg[2:]
             argsdict[arg] = val
     
-    if argsdict.get("xml_file") is None:
-        print("Usage: ./TestCaseSummary.py --xml_file={} [--markdown_file={} or --html_file={}]"
-            .format(DEFAULT_XML, DEFAULT_MD, DEFAULT_HTML))
-        exit(0)
+    if argsdict.get("input") is None or argsdict.get("output") is None:
+        usage()
     else:
-        markdown_file = argsdict.get("markdown_file")
-        html_file = argsdict.get("html_file")
-        xml_file = argsdict.get("xml_file")
+        input_file = argsdict.get("input")
+        output_file = argsdict.get("output")
+        print("input: {}, output: {}".format(input_file, output_file))
+        json_file = None
+        xml_file = None
+        markdown_file = None
+        html_file = None
+        
 
-        if(not markdown_file):
-            if not html_file:
-                markdown_file = DEFAULT_MD
-            else:
-                markdown_file = html_file[:-5] + ".md"
-        
-        if(not xml_file):
-            xml_file=DEFAULT_XML
-        
-        if os.path.isfile(markdown_file):
+        if input_file.endswith(".xml"):
+            xml_file=input_file
+        elif input_file.endswith(".json"):
+            json_file=input_file
+        else:
+            usage()
+
+        if output_file.endswith(".md"):
+            markdown_file = output_file
+        elif output_file.endswith(".html"):
+            html_file = output_file
+            markdown_file = html_file[:-5] + ".md"
+        else:
+            usage()
+
+
+
+        if markdown_file and os.path.isfile(markdown_file):
             os.remove(markdown_file)
-     
         if html_file and os.path.isfile(html_file):
             os.remove(html_file)
     
-
-        write_test_cases(xml_file, markdown_file, html_file)
+        if json_file:
+            read_test_cases(json_file, markdown_file, xml_file)
+        else:
+            print("convert {} to {} or {}".format(xml_file, markdown_file, html_file))
+            write_test_cases(xml_file, markdown_file, html_file)
