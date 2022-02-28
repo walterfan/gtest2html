@@ -6,11 +6,10 @@ import os
 import markdown
 import codecs
 import sys
-import struct
+
 import re
 import json
 import logging
-import subprocess
 
 import xml.etree.ElementTree as ET
 
