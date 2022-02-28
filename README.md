@@ -18,17 +18,17 @@ make
 * Generate unit test result
 
 ```
-./bld/gtest_demo --gtest_output="xml:goog-cc-ut-report.xml"
+./bld/gtest_demo --gtest_output="xml:ut-report.xml"
 ```
 
 * Convert xml to markdown
 
 ```
-./gtest2html.py --markdown_file=goog-cc-ut-report.md --xml_file=goog-cc-ut-report.xml
+./gtest2html.py --markdown_file=-ut-report.md --xml_file=ut-report.xml
 ```
 
 * Convert xml to html
 
 ```
-./gtest2html.py --xml_file=goog-cc-ut-report.xml --html_file=goog-cc-ut-report.xml
+./gtest2html.py --xml_file=ut-report.xml --html_file=ut-report.xml
 ```
