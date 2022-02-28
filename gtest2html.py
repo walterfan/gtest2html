@@ -33,8 +33,6 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 
-
-
 ENABLE_EXTEND_ATTRIBUTES = False
 
 class TestSuite:
@@ -331,12 +329,13 @@ if __name__ == '__main__':
             usage()
 
 
-
+        """
         if markdown_file and os.path.isfile(markdown_file):
             os.remove(markdown_file)
         if html_file and os.path.isfile(html_file):
             os.remove(html_file)
-    
+        """
+
         if json_file:
             read_test_cases(json_file, markdown_file, xml_file)
         else:
