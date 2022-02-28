@@ -9,8 +9,8 @@ A python script to convert google test report from xml to markdown or html files
 * build example
 
 ```
-mkdir -p example/bld
-cd example/bld
+mkdir -p bld
+cd bld
 cmake ..
 make
 ```
