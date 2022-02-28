@@ -11,6 +11,7 @@ import re
 import json
 import logging
 import subprocess
+from tkinter.tix import COLUMN
 import xml.etree.ElementTree as ET
 
 DEFAULT_MD = "goog-cc-ut-report.md"
@@ -30,6 +31,10 @@ handler.setLevel(logging.INFO)
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
+
+COLUMNS = [ "suite", "case", "scenario", "given", "when", "then", "checkpoints","result"]
+
+ENABLE_EXTEND_ATTRIBUTES = False
 
 class TestSuite:
     def __init__(self, json_file):
@@ -60,9 +65,16 @@ class TestSuite:
                 mdfile.write("* %s\n\n" % test_suite_result["info"])
             else:
                 logger.error("cannot find test suite: " + test_suite['name'])
+            
+            print("ENABLE_EXTEND_ATTRIBUTES=", ENABLE_EXTEND_ATTRIBUTES)
 
-            mdfile.write("| # | feature | test case name | scenario | given | when | then | checkpoints | result |\n")
-            mdfile.write("|---|---|---|---|---|---|---|---|---|\n")
+            if ENABLE_EXTEND_ATTRIBUTES:
+                mdfile.write("| # | suite | case | time | result | given | when | then | checkpoints |\n")
+                mdfile.write("|---|---|---|---|---|---|---|---|---|\n")
+            else:
+                mdfile.write("| # | suite | case | time | result |\n")
+                mdfile.write("|---|---|---|---|---|\n")
+
             for test_case in test_suite['testcases']:
                 total_case_count = total_case_count + 1
                 case_full_name = test_suite['name'] + '.' + test_case['name']
@@ -70,18 +82,24 @@ class TestSuite:
                 if(not test_case_result):
                     logger.error("cannot find test case:" + case_full_name)
 
-                mdfile.write("| %d | %s | %s | %s | %s | %s | %s | %s | %s |\n" 
-                    % (total_case_count, test_case['feature'],
-                    test_case['name'],
-                    test_case['scenario'],
-                    test_case['given'],
-                    test_case['when'],
-                    test_case['then'],
-                    self.list_to_string(test_case['checkpoints']), test_case_result))
-                
-                cppstr = "# TEST_F(%s,%s) {\n m_pTestCaseBuilder->given(\"%s\")\n->when(\"%s\")\n->then(\"%s\")\n->scenario(\"%s\")\n->checkpoints(\"%s\");\n}\n" \
-                    % (test_suite['name'], test_case['name'], test_case['given'], test_case['when'], test_case['then'], test_case['scenario'], self.list_to_string(test_case['checkpoints']))
-                logger.info(cppstr)
+                if ENABLE_EXTEND_ATTRIBUTES:
+                    mdfile.write("| %d | %s | %s | %s | %s | %s | %s | %s | %s |\n" 
+                        % (total_case_count, 
+                        test_case['suite'],
+                        test_case['name'],
+                        test_case['time'],
+                        test_case['result'],
+                        test_case['given'],
+                        test_case['when'],
+                        test_case['then'],
+                        self.list_to_string(test_case['checkpoints'])))
+                else:
+                    mdfile.write("| %d | %s | %s | %s | %s |\n" 
+                        % (total_case_count,
+                        test_case['suite'],
+                        test_case['name'],
+                        test_case['time'],
+                        test_case['result']))
 
 class TestResults:
     def __init__(self, testResultPath):
@@ -124,11 +142,13 @@ class TestResults:
                 
                 case_full_name = "%s.%s" % (case.attrib.get('classname'), case.attrib.get('name'))
                
+                test_case_result["suite"] = suite.attrib.get('name')
                 test_case_result["case_full_name"] = case_full_name
                 test_case_result["classname"] = case.attrib.get('classname')
                 test_case_result["name"] = case.attrib.get('name')
                 test_case_result["result"] = case_exec_result
-                
+                test_case_result["time"] = case.attrib.get('time')
+                #----------------- extended fields --------------------
                 test_case_result["given"] = case.attrib.get('given')
                 test_case_result["when"] = case.attrib.get('when')
                 test_case_result["then"] = case.attrib.get('then') 
@@ -170,19 +190,36 @@ class TestResults:
                 logger.error("cannot find test suite: " + test_suite['name'])
                 continue
             
-            mdfile.write("| # | feature | test case name | scenario | given | when | then | checkpoints | result |\n")
-            mdfile.write("|---|---|---|---|---|---|---|---|---|\n")
+
+            if ENABLE_EXTEND_ATTRIBUTES:
+                mdfile.write("| # | suite | case | time | result | given | when | then | checkpoints |\n")
+                mdfile.write("|---|---|---|---|---|---|---|---|---|\n")
+            else:
+                mdfile.write("| # | suite | case | time | result |\n")
+                mdfile.write("|---|---|---|---|---|\n")
+
             for case_full_name, test_case_result in test_suite_result['testcases'].items():
                 total_case_count = total_case_count + 1
-                mdfile.write("| %d | %s | %s | %s | %s | %s | %s | %s | %s |\n" 
-                    % (total_case_count, test_case_result['feature'],
-                    test_case_result['name'],
-                    test_case_result['scenario'],
-                    test_case_result['given'],
-                    test_case_result['when'],
-                    test_case_result['then'],
-                    test_case_result['checkpoints'], 
-                    test_case_result['result']))
+                
+
+                if ENABLE_EXTEND_ATTRIBUTES:
+                    mdfile.write("| %d | %s | %s | %s | %s | %s | %s | %s | %s |\n" 
+                        % (total_case_count, 
+                        test_case_result['suite'],
+                        test_case_result['name'],
+                        test_case_result['time'],
+                        test_case_result['result'],
+                        test_case_result['given'],
+                        test_case_result['when'],
+                        test_case_result['then'],
+                        self.list_to_string(test_case_result['checkpoints'])))
+                else:
+                    mdfile.write("| %d | %s | %s | %s | %s |\n" 
+                        % (total_case_count,
+                        test_case_result['suite'],
+                        test_case_result['name'],
+                        test_case_result['time'],
+                        test_case_result['result']))    
 
 class TestCaseSummarizer:
     def __init__(self, caseDefinitionPath, caseResultFile):
@@ -237,6 +274,23 @@ class TestCaseSummarizer:
         output_file.write(html)
     
 
+def read_test_cases(xml_file):
+    summarizer =  TestCaseSummarizer(".", xml_file)
+    summarizer.read_case_files()
+    summarizer.read_test_results()
+    summarizer.json_to_markdown(markdown_file)
+        
+
+def write_test_cases(xml_file, markdown_file, html_file):
+    summarizer =  TestCaseSummarizer(".", xml_file)
+        
+    summarizer.read_test_results()
+    summarizer.xml_to_markdown(markdown_file)
+
+    if(html_file):
+        summarizer.dump_to_html(html_file)
+
+
 if __name__ == '__main__':
     
     
@@ -248,22 +302,21 @@ if __name__ == '__main__':
             arg = arg[2:]
             argsdict[arg] = val
     
-    if argsdict.get("markdown_file") is None:
-        print("Usage: ./TestCaseSummary.py --markdown_file={} [--html_file={} --xml_file={}"
-            .format(DEFAULT_MD, DEFAULT_HTML, DEFAULT_XML))
+    if argsdict.get("xml_file") is None:
+        print("Usage: ./TestCaseSummary.py --xml_file={} [--markdown_file={} or --html_file={}]"
+            .format(DEFAULT_XML, DEFAULT_MD, DEFAULT_HTML))
         exit(0)
     else:
         markdown_file = argsdict.get("markdown_file")
-        if(not markdown_file):
-            markdown_file = DEFAULT_MD
-        
         html_file = argsdict.get("html_file")
-            
-        source_type =  argsdict.get("source")
-        if(not source_type):
-            source_type = 'xml'
-        
         xml_file = argsdict.get("xml_file")
+
+        if(not markdown_file):
+            if not html_file:
+                markdown_file = DEFAULT_MD
+            else:
+                markdown_file = html_file[:-5] + ".md"
+        
         if(not xml_file):
             xml_file=DEFAULT_XML
         
@@ -273,17 +326,5 @@ if __name__ == '__main__':
         if html_file and os.path.isfile(html_file):
             os.remove(html_file)
     
-        summarizer =  TestCaseSummarizer(".", xml_file)
-        
-        
-        if source_type == 'json':
-            summarizer.read_case_files()
-            summarizer.read_test_results()
-            summarizer.json_to_markdown(markdown_file)
-        else:
-            summarizer.read_test_results()
-            summarizer.xml_to_markdown(markdown_file)
- 
-        if(html_file):
-            summarizer.dump_to_html(html_file)
-    
+
+        write_test_cases(xml_file, markdown_file, html_file)
