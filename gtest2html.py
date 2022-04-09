@@ -6,7 +6,7 @@ import os
 import markdown
 import codecs
 import sys
-
+import argparse
 import re
 import json
 import logging
@@ -286,25 +286,23 @@ def write_test_cases(xml_file, markdown_file, html_file):
         summarizer.dump_to_html(html_file)
 
 def usage():
-    print("Usage: ./TestCaseSummary.py --input={} --output={}]"
-            .format(DEFAULT_XML, DEFAULT_MD))
-    exit(0)
+    print("Usage: ./gtest2html.py -i={} -o={}]".format(DEFAULT_XML, DEFAULT_MD))
 
 if __name__ == '__main__':
 
-    argsdict = {}
+    parser = argparse.ArgumentParser()
 
-    for farg in sys.argv:
-        if farg.startswith('--'):
-            (arg, val) = farg.split("=")
-            arg = arg[2:]
-            argsdict[arg] = val
-    
-    if argsdict.get("input") is None or argsdict.get("output") is None:
-        usage()
-    else:
-        input_file = argsdict.get("input")
-        output_file = argsdict.get("output")
+    parser.add_argument('-c', action='store', dest='command', default="convert", help='specify a command')
+    parser.add_argument('-t', action='store', dest='testcase', help='specify a test case')
+    parser.add_argument('-i', action='store', dest='input', help='specify a input file')
+    parser.add_argument('--input', action='store', dest='input', help='specify a input file')
+    parser.add_argument('-o', action='store', dest='output', help='specify a output file')
+    parser.add_argument('--output', action='store', dest='output', help='specify a output file')
+    args = parser.parse_args()
+
+    if args.command == "convert" and args.input and args.output:
+        input_file = args.input
+        output_file = args.output
         print("input: {}, output: {}".format(input_file, output_file))
         json_file = None
         xml_file = None
@@ -340,3 +338,13 @@ if __name__ == '__main__':
         else:
             print("convert {} to {} or {}".format(xml_file, markdown_file, html_file))
             write_test_cases(xml_file, markdown_file, html_file)
+
+    elif args.command == "test" or args.testcase:
+        testcases = "*"
+        if not args.testcase:
+            testcases = args.testcase
+        cmd = './bld/gtest_demo --gtest_filter="{}" --gtest_output="xml:ut-report.xml"'.format(testcases)
+        print(cmd)
+        os.system(cmd)
+    else:
+        usage()
