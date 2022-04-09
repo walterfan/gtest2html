@@ -4,10 +4,18 @@ A python script to convert google test report from xml to markdown or html files
 
 # Usage
 
+python3 is required, run `pip3 install -r requirements.txt` first
+
 * Convert xml to markdown
 
 ```
-./gtest2html.py  -i example/ut-report.xml -o -ut-report.md
+./gtest2html.py  -i example/ut-report.xml -o ut-report.md
+```
+
+* Convert xml to restructuredText
+
+```
+./gtest2html.py  --input=example/ut-report.xml --output=-ut-report.rst
 ```
 
 * Convert xml to html

@@ -10,7 +10,7 @@ import argparse
 import re
 import json
 import logging
-
+from m2r import convert
 import xml.etree.ElementTree as ET
 
 DEFAULT_MD = "ut-report.md"
@@ -256,34 +256,25 @@ class TestCaseSummarizer:
                     self.read_case_file(os.path.join(root, filename))
 
     
-    def dump_to_html(self, filename):
+    def md_to_html(self, markdown_file, html_file ):
 
         input_file = codecs.open(markdown_file, mode="r", encoding="utf-8")
         text = input_file.read()
 
         html = markdown.markdown(text, extensions=['markdown.extensions.tables'])
 
-        output_file = codecs.open(html_file, "w", 
-                          encoding="utf-8", 
-                          errors="xmlcharrefreplace")
+        output_file = codecs.open(html_file, "w", encoding="utf-8")
         output_file.write(html)
     
+    def md_to_rst(self, markdown_file, rst_file):
 
-def read_test_cases(json_file, markdown_file, xml_file):
-    summarizer =  TestCaseSummarizer(".", xml_file)
-    summarizer.read_case_file(json_file)
-    summarizer.read_test_results()
-    summarizer.json_to_markdown(markdown_file)
-        
+        input_file = codecs.open(markdown_file, mode="r", encoding="utf-8")
+        text = input_file.read()
 
-def write_test_cases(xml_file, markdown_file, html_file):
-    summarizer =  TestCaseSummarizer(".", xml_file)
-        
-    summarizer.read_test_results()
-    summarizer.xml_to_markdown(markdown_file)
+        rst = convert(text)
 
-    if(html_file):
-        summarizer.dump_to_html(html_file)
+        output_file = codecs.open(rst_file, "w", encoding="utf-8")
+        output_file.write(rst)
 
 def usage():
     print("Usage: ./gtest2html.py -i={} -o={}]".format(DEFAULT_XML, DEFAULT_MD))
@@ -304,11 +295,12 @@ if __name__ == '__main__':
         input_file = args.input
         output_file = args.output
         print("input: {}, output: {}".format(input_file, output_file))
+
         json_file = None
         xml_file = None
         markdown_file = None
         html_file = None
-        
+        rst_file = None
 
         if input_file.endswith(".xml"):
             xml_file=input_file
@@ -319,25 +311,41 @@ if __name__ == '__main__':
 
         if output_file.endswith(".md"):
             markdown_file = output_file
+        if output_file.endswith(".rst"):
+            rst_file = output_file
         elif output_file.endswith(".html"):
             html_file = output_file
-            markdown_file = html_file[:-5] + ".md"
         else:
             usage()
 
+        if markdown_file:
+            if os.path.isfile(markdown_file):
+                os.remove(markdown_file)
+        else:
+            dot_pos = output_file.rfind(".")
+            markdown_file = output_file[:dot_pos] + ".md"
 
-        
-        if markdown_file and os.path.isfile(markdown_file):
-            os.remove(markdown_file)
         if html_file and os.path.isfile(html_file):
             os.remove(html_file)
-        
+        if rst_file and os.path.isfile(rst_file):
+            os.remove(rst_file)
 
+        summarizer =  TestCaseSummarizer(".", xml_file)
+        
         if json_file:
-            read_test_cases(json_file, markdown_file, xml_file)
+            summarizer.read_case_file(json_file)
+            summarizer.read_test_results()
+            summarizer.json_to_markdown(markdown_file)
         else:
-            print("convert {} to {} or {}".format(xml_file, markdown_file, html_file))
-            write_test_cases(xml_file, markdown_file, html_file)
+            if xml_file:
+                summarizer.read_test_results()
+                summarizer.xml_to_markdown(markdown_file)
+
+            if html_file:
+                summarizer.md_to_html(markdown_file, html_file)
+            if rst_file:
+                summarizer.md_to_rst(markdown_file, rst_file)
+
 
     elif args.command == "test" or args.testcase:
         testcases = "*"
