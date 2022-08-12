@@ -35,3 +35,5 @@ target_link_libraries(
 
 include(GoogleTest)
 gtest_discover_tests(gtest_demo)
+
+add_subdirectory(doc)

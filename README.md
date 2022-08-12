@@ -41,3 +41,15 @@ cd ..
 ```
 ./bld/gtest_demo --gtest_output="xml:ut-report.xml"
 ```
+
+# Generate doxygen document
+
+* Integrate https://github.com/kracejic/EmptyDoxygenCMake
+
+steps
+
+```
+cd bld
+cmake ..
+make doc
+```

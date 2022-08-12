@@ -32,9 +32,22 @@ typedef std::vector<WeakObserverPtr>::iterator WeakObserverIterator;
 class ISubject: public std::enable_shared_from_this<ISubject> {
 public:
     virtual ~ISubject() {};
-
+    /**
+     * @brief attach observer
+     * 
+     * @param observer observer to be attached
+     */
     virtual void Attach(WeakObserverPtr observer) = 0;
+    /**
+     * @brief detach observer
+     * 
+     * @param observer to be detached
+     */
     virtual void Detach(WeakObserverPtr observer) = 0;
+    /**
+     * @brief notify observers
+     * 
+     */
     virtual void Notify() = 0;
 protected:
     ISubject();
