@@ -15,6 +15,12 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(JSONCPP jsoncpp)
+include_directories("${JSONCPP_INCLUDE_DIRS}")
+link_libraries(${JSONCPP_LIBRARIES})
+
 include_directories(/usr/local/include)
 link_directories(/usr/local/lib)
 
@@ -24,7 +30,6 @@ add_executable(
   gtest_demo
   example/test_case_builder.h
   example/test_case_builder.cpp
-  example/observer.cpp
   example/smart_ptr_test.cpp
 )
 target_link_libraries(

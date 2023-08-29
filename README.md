@@ -2,7 +2,34 @@
 
 A python script to convert google test report from xml to markdown or html files
 
-# Usage
+# prerequisite
+
+```
+apt install -y doxygen graphviz plantuml libjsoncpp-dev libgtest-dev
+
+```
+
+
+# Example
+
+* build example
+
+```
+mkdir -p bld
+cd bld
+cmake ..
+make
+cd ..
+```
+
+* Generate unit test result
+
+```
+./bld/gtest_demo --gtest_filter="testcase*" --gtest_output="xml:ut-report.xml"
+```
+
+
+# Generate HTML report 
 
 python3 is required, run `pip3 install -r requirements.txt` first
 
@@ -28,24 +55,6 @@ python3 is required, run `pip3 install -r requirements.txt` first
 
 ```
 ./gtest2html.py -c test
-```
-
-# Example
-
-* build example
-
-```
-mkdir -p bld
-cd bld
-cmake ..
-make
-cd ..
-```
-
-* Generate unit test result
-
-```
-./bld/gtest_demo --gtest_filter="testcase*" --gtest_output="xml:ut-report.xml"
 ```
 
 # Generate doxygen document
